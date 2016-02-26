@@ -1,0 +1,16 @@
+SELECT dc.user_uuid as toolsclient,
+dc.firstname || ' '|| dc.lastname as "Name",
+dc.email,
+dc.signup_city_id,
+ac.trip_most_freq_city_id,
+ac.lifetime_trips
+
+FROM dim_client dc
+JOIN analytics_client ac on ac.user_uuid = dc.user_uuid
+WHERE dc.signup_city_id = 195
+and ac.trip_most_freq_city_id = 195
+and ac.lifetime_trips > 10
+and dc.signup_timestamp >= NOW () -interval '1 months'
+and ac.is_uber_email is FALSE
+and ac.role = 'client'
+and dc.banned is FALSE
