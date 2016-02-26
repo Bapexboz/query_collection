@@ -1,0 +1,21 @@
+SELECT
+  distinct dc.user_uuid AS rider_uuid
+FROM dim_client dc
+JOIN analytics_client ac ON ac.user_uuid = dc.user_uuid
+LEFT JOIN api_user_tags fraud
+  ON fraud.user_uuid = dc.user_uuid
+ AND fraud.name IN ('suspected_fake_account_ip',
+                    'suspected_fake_account_device_model',
+                    'suspected_clique_rider',
+                    'trip_request_with_simulator_device',
+                    'suspicious_prefix_100_90',
+                    'guardian_gsapp',
+                    'guardian_dsapp')
+WHERE dc.signup_city_id IN ({{city_id}})
+  AND dc.signup_timestamp at time zone 'Asia/Shanghai'::date =
+      NOW() at time zone 'Asia/Shanghai'::date - INTERVAL '{{date_diff}} days'
+  AND dc.is_uber_email is FALSE
+  AND dc.banned is FALSE
+  AND ac.first_settled_trip_uuid IS NULL
+  AND fraud.user_uuid IS NULL
+  AND dc.language_id = 43
