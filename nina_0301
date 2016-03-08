@@ -1,0 +1,33 @@
+SELECT
+*
+FROM
+(select 
+    	d.user_uuid as toolsclientid,
+d.country_id,
+	d.mobile,
+	ca.signup_timestamp,
+     CASE WHEN d.channel = 'Paid' THEN 'Paid'
+    WHEN d.is_referral THEN 'Referral'
+    WHEN d.channel = 'DSR' THEN 'DSR'
+    WHEN d.has_promo THEN 'Promo'
+    ELSE 'Organic' END as channel
+    
+FROM
+   dim_client d 
+	join analytics_client ca on ca.user_uuid = d.user_uuid
+--LEFTLEFT JOIN (SELECT telephone_code, id FROM api_countries) co on d.mobile_country_id = co.id
+--LEFT JOIN dim_client u2 ON u2.user_uuid = d.user_uuid
+		--AND u2.banned IS TRUE
+where 
+    not d.is_uber_email
+    and d.country_id = 37
+    and d.banned IS FALSE 
+AND d.has_confirmed_mobile != 'no'
+AND d.signup_city_id = {{city_id}}
+AND ca.first_trip_uuid IS not NULL
+and ca.first_settled_trip_uuid is null
+AND ca.signup_timestamp between timestamp '{{start_date}}' - interval '1 day' and timestamp '{{end_date}}' + interval '1 day'
+AND ca.signup_timestamp at timezone '{{timezone}}' between '{{start_date}}' and '{{end_date}}'
+group by 1,2,3,4,5)x
+
+test this one
